@@ -3,6 +3,8 @@
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <CleanWPPAllFilesInSingleFolder>false</CleanWPPAllFilesInSingleFolder>
+      <PackageAsSingleFile>false</PackageAsSingleFile>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>
     </ProductVersion>
@@ -95,7 +97,10 @@
       <HintPath>..\packages\Microsoft.AspNet.WebApi.WebHost.5.0.0-rc1\lib\net45\System.Web.Http.WebHost.dll</HintPath>
     </Reference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="Properties\PublishProfiles\nl-jayway-throttle-lab-1 - FTP.pubxml" />
+    <None Include="Properties\PublishProfiles\nl-jayway-throttle-lab-1 - Web Deploy.pubxml" />
+  </ItemGroup>
   <ItemGroup>
     <Compile Include="ThrottledRequest.cs" />
     <Compile Include="ValueProviders\BodyValueProvider.cs" />
