@@ -1,48 +1,56 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Web;
 using System.Web.Http;
+using System.Web.Http.ModelBinding;
+using Jayway.Throttling.Web.ModelBinders;
 
 namespace Jayway.Throttling.Web.Controllers
 {
     public class AccountsController : ApiController
     {
-        private readonly IThrottlingService _throttlingService;
+        readonly IThrottlingService _throttlingService;
 
         public AccountsController() : this(new AzureCacheThrottlingContext())
-        {}
+        {
+        }
 
         public AccountsController(IThrottlingContext throttlingContext)
         {
             _throttlingService = throttlingContext.GetThrottlingService();
         }
-        
+
         [HttpPost("accounts/{account}/demo")]
         public HttpResponseMessage Demo(string account)
         {
-            bool allow = _throttlingService.Allow(account, 1, () => new Interval(60,10));
-            return allow ? Request.CreateResponse(HttpStatusCode.OK) : Request.CreateResponse(HttpStatusCode.PaymentRequired, "THROTTLED");
+            bool allow = _throttlingService.Allow(account, 1, () => new Interval(60, 10));
+            return allow
+                ? Request.CreateResponse(HttpStatusCode.OK)
+                : Request.CreateResponse(HttpStatusCode.PaymentRequired, "THROTTLED");
         }
 
-        [HttpPost("single/{account}")]
-        public HttpResponseMessage Single(string account, int cost, int intervalInSeconds, long creditsPerIntervalValue)
+        [HttpPost("single")]
+        public HttpResponseMessage Single(
+            [ModelBinder(typeof (SingleAccountModelBinder))] SingleAccountInputModel singleAccountInput)
         {
-            bool allow = new ThrottledRequest(_throttlingService, cost, intervalInSeconds, creditsPerIntervalValue).Perform(account);
-            return allow ? Request.CreateResponse(HttpStatusCode.OK) : Request.CreateResponse(HttpStatusCode.PaymentRequired, "THROTTLED");
+            bool allow =
+                new ThrottledRequest(_throttlingService, singleAccountInput.Cost, singleAccountInput.IntervalInSeconds,
+                    singleAccountInput.CreditsPerIntervalValue).Perform(singleAccountInput.Account);
+            return allow
+                ? Request.CreateResponse(HttpStatusCode.OK)
+                : Request.CreateResponse(HttpStatusCode.PaymentRequired, "THROTTLED");
         }
 
-        [HttpPost("multi/{account}")]
-        public dynamic Multi(string account, int calls, int accounts, int cost, int intervalInSeconds, long creditsPerIntervalValue)
+        [HttpPost("multi")]
+        public dynamic Multi(string account, int calls, int accounts, int cost, int intervalInSeconds,
+            long creditsPerIntervalValue)
         {
             var r = new ThrottledRequest(_throttlingService, cost, intervalInSeconds, creditsPerIntervalValue);
             var throttledCount = 0;
             long startTime = DateTime.Now.Millisecond; //System.currentTimeMillis();
             for (var indx = 0; indx < calls; indx++)
             {
-                var randomAccount = "a" + new Random().Next() * accounts;
+                var randomAccount = "a" + new Random().Next()*accounts;
                 if (!r.Perform(randomAccount))
                 {
                     throttledCount++;
@@ -55,21 +63,4 @@ namespace Jayway.Throttling.Web.Controllers
 
 
     //TODO create filter
-    public class ThrottledRequest {
-        private readonly long _cost;
-        private readonly Func<Interval> _newInterval;
-        private readonly IThrottlingService _throttlingService;
-
-
-        public ThrottledRequest(IThrottlingService throttlingService, int cost, int intervalInSeconds, long creditsPerIntervalValue) {
-            this._throttlingService = throttlingService;
-            this._cost = cost;
-            this._newInterval = () => new Interval(intervalInSeconds, creditsPerIntervalValue);
-        }
-
-        public bool Perform(String account) {
-            return _throttlingService.Allow(account, _cost, _newInterval);
-        }
-    }
-
 }

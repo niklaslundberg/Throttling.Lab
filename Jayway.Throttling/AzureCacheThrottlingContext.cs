@@ -1,5 +1,4 @@
-﻿using System.Configuration;
-using Microsoft.ApplicationServer.Caching;
+﻿using Microsoft.ApplicationServer.Caching;
 
 namespace Jayway.Throttling
 {
@@ -7,12 +6,13 @@ namespace Jayway.Throttling
     {
         public IThrottlingService GetThrottlingService()
         {
-            throw new ConfigurationErrorsException("Configure Cache Service!");
-            var cache = new DataCache(); 
-            return new AzureCacheThrottlingService(cache);
+            var cache = new DataCache();
+            return new AzureCacheThrottlingService(cache, new CostCalculator());
         }
 
-        public void Close()
-        {}
+        public void Dispose()
+        {
+            
+        }
     }
 }

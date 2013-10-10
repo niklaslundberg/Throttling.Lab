@@ -1,10 +1,9 @@
-﻿namespace Jayway.Throttling
-{
+﻿using System;
 
-    public interface IThrottlingContext
+namespace Jayway.Throttling
+{
+    public interface IThrottlingContext : IDisposable
     {
         IThrottlingService GetThrottlingService();
-
-        void Close();
     }
 }

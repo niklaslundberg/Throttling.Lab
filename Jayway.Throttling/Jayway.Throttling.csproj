@@ -63,6 +63,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CacheExtensions.cs" />
+    <Compile Include="CostCalculator.cs" />
+    <Compile Include="ICostCalculator.cs" />
+    <Compile Include="SingleAccountInputModel.cs" />
     <Compile Include="AzureCacheThrottlingService.cs" />
     <Compile Include="AzureCacheThrottlingContext.cs" />
     <Compile Include="Interval.cs" />
